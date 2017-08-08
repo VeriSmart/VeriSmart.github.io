@@ -1,0 +1,286 @@
+<h1>VeriSmart API Documentation</h1>
+<h2>Introduction</h2>
+<p>This document contains instructions on using two of VeriSmarts APIs.</p>
+<p>The Coverage API provides information on coverage within a Postcode. It can also provide a quotation if the team in question provide this information upfront.</p>
+<p>The Booking API allows a third-party provider to create booking requests within the covering teams Calendar. The covering team will contact the Landlord to confirm details and pricing.</p>
+<p>Combining these two APIs will allow a third-party to provide a simple interface to their customers for booking with VeriSmart.</p>
+<h2>Coverage API</h2>
+<p>Using Coverage is simple, as there is no authentication required. A URL provides the data as JSON.</p>
+<p>A Postcode is required. You can optionally include details of the requested service and property for a quotation.</p>
+<pre><code>https://www.inventoryclerk.org/dcal/api/coverage/quote/{POSTCODE}/{BEDROOMS}/{FURNISHED}/{SERVICE}/.json
+</code></pre>
+
+<p>All {FIELDS} need to be URL encoded.</p>
+<h3>Fields</h3>
+<p>POSTCODE - Full postcode or Outcode. Spaces are ignored. Examples, BH1 1XX, BH11XX, BH1
+BEDROOMS - Number of bedrooms, options are 1,2,3,4,5 or 6
+FURNISHED - Options are FURNISHED, UNFURNISHED or PART-FURNISHED
+SERVICE - Currently, options are INVENTORY, CHECK-OUT, CHECK-IN and INTERIM</p>
+<p>A working example</p>
+<pre><code>https://www.inventoryclerk.org/dcal/api/coverage/quote/BH1%201XX/2%20BEDROOM/UNFURNISHED/INVENTORY/.json
+</code></pre>
+
+<p>This returns the following JSON, an example of an area which is licensed, but the team does not provide quote prices upfront. A booking request for this team would trigger the team to contact the Landlord and quote manually.</p>
+<pre><code>{
+&quot;request_element&quot;: &quot;BH1 1XX&quot;,
+&quot;description_en&quot;: &quot;Bournemouth BH1 1XX, UK&quot;,
+&quot;latlng&quot;: {
+    &quot;lat&quot;: 50.7208655,
+    &quot;lng&quot;: -1.8778515
+  },
+  &quot;licensed_area&quot;: {
+    &quot;is_licensed&quot;: 1,
+    &quot;teamid&quot;: &quot;1691&quot;,
+    &quot;team_name&quot;: &quot;VeriSmart Winton&quot;,
+    &quot;team_leader_name&quot;: &quot;Rebecca Meddings&quot;,
+    &quot;team_leader_email&quot;: &quot;winton@verismartinventories.co.uk&quot;,
+    &quot;team_logo_url&quot;: &quot;http:\/\/www.inventoryclerk.org\/photographs\/logos\/1691\/thumb.png&quot;
+  },
+  &quot;nearest_team&quot;: null,
+  &quot;quoted_price&quot;: &quot;Quote Required&quot;
+}
+</code></pre>
+
+<p>This example returns a quoted price</p>
+<pre><code>https://www.inventoryclerk.org/dcal/api/coverage/quote/NR118HJ/2/UNFURNISHED/INVENTORY/.json
+</code></pre>
+
+<p>This JSON is Returned</p>
+<pre><code>{
+  &quot;request_element&quot;: &quot;NR118HJ&quot;,
+  &quot;description_en&quot;: &quot;Gimingham, Norwich NR11 8HJ, UK&quot;,
+  &quot;latlng&quot;: {
+    &quot;lat&quot;: 52.8835715,
+    &quot;lng&quot;: 1.4008308
+  },
+  &quot;licensed_area&quot;: {
+    &quot;is_licensed&quot;: 1,
+    &quot;teamid&quot;: &quot;1630&quot;,
+    &quot;team_name&quot;: &quot;Inventoryclerk Norfolk&quot;,
+    &quot;team_leader_name&quot;: &quot;Simon Colbourne&quot;,
+    &quot;team_leader_email&quot;: &quot;simon.colbourne@verismartinventories.co.uk&quot;,
+    &quot;team_logo_url&quot;: &quot;http:\/\/www.inventoryclerk.org\/photographs\/logos\/1630\/thumb.png&quot;
+  },
+  &quot;nearest_team&quot;: null,
+  &quot;quoted_price&quot;: 90
+}
+</code></pre>
+
+<p>Example of a request where the area does not have coverage within 25 miles</p>
+<pre><code>https://dev2.verismart.co.uk/dcal/api/coverage/nearest/IP1/.json
+</code></pre>
+
+<p>This JSON is returned</p>
+<pre><code>{
+  &quot;request_element&quot;: &quot;IP1&quot;,
+  &quot;description_en&quot;: &quot;Ipswich IP1, UK&quot;,
+  &quot;latlng&quot;: {
+    &quot;lat&quot;: 52.0744043,
+    &quot;lng&quot;: 1.131861
+  },
+  &quot;licensed_area&quot;: {
+    &quot;is_licensed&quot;: 0,
+    &quot;teamid&quot;: 0
+  },
+  &quot;nearest_team&quot;: {
+    &quot;within_distance&quot;: 0,
+    &quot;teamid&quot;: 0
+  }
+}
+</code></pre>
+
+<p>An example of a request where the area is directly covered, but the distance is within 25 miles</p>
+<pre><code>{
+  &quot;request_element&quot;: &quot;CM4&quot;,
+  &quot;description_en&quot;: &quot;Ingatestone CM4, UK&quot;,
+  &quot;latlng&quot;: {
+    &quot;lat&quot;: 51.6722402,
+    &quot;lng&quot;: 0.390851
+  },
+  &quot;licensed_area&quot;: {
+    &quot;is_licensed&quot;: 0,
+    &quot;teamid&quot;: 0
+  },
+  &quot;nearest_team&quot;: {
+    &quot;within_distance&quot;: 1,
+    &quot;teamid&quot;: &quot;1689&quot;,
+    &quot;distance&quot;: 13.65
+  }
+}
+</code></pre>
+
+<p>Apart from displaying the price and optionally the name of the team to your customer, the information you need from this call to create a booking request is &quot;teamid&quot;, from either the &quot;licensed<em>area&quot; section or the &quot;nearest</em>team&quot; section, depending on whether it it licensed or not.</p>
+<p>The next section demonstrates how to create a booking with this information.</p>
+<h2>Booking API</h2>
+<h3>Conventions</h3>
+<p>All responses include a field of &quot;response_status&quot;.</p>
+<p>Response of 1 means the query is successful, and 0 means failure. If failed, the only other field will be &quot;error&quot;, which contains the reason for failure.</p>
+<p>All submitted data should be URL Encoded.</p>
+<p>All responses will be JSON encoded.</p>
+<p>All endpoints use SSL, and will not work over a normal http:// transport.</p>
+<h3>Endpoint</h3>
+<pre><code>https://www.inventoryclerk.org/dcal/api/v1/booking/
+</code></pre>
+
+<h3>Authentification</h3>
+<p>The booking API uses signed query strings to authenticate the request. The querystring will be signed using the secret, which is then appended to the URL before the GET request is made.</p>
+<h3>Building a signed URL</h3>
+<p>We will be signing just the query string, which contains the apikey and our requests and/or data.</p>
+<p>An simple example query string, showing all bookings for today:</p>
+<pre><code>apikey=D15AD8F8015989F637EF53E8A1458YHR4C444B58&amp;mode=show
+</code></pre>
+
+<p>Now we take that string, and and hash it with sha512 to produce our signature string.</p>
+<p>In PHP:</p>
+<pre><code>$signature = hash_hmac(&quot;sha512&quot;, $query_string, $secret);
+</code></pre>
+
+<p>This signature can now be appended as &quot;signature&quot; to the url</p>
+<p>In PHP:</p>
+<pre><code>$query_string = $query_string . '&amp;signature=' . $signature;
+</code></pre>
+
+<p>And this URL can be used to query the API. The signature tells VeriSmart that this request is correctly authorised, and SSL ensures the request data remains private.</p>
+<h2>Creating a booking</h2>
+<p>To start with, here are all the fields. </p>
+<pre><code>apikey
+mode
+landlord_name
+landlord_email
+landlord_phone
+landlord_address1
+landlord_address2
+landlord_town
+landlord_county
+landlord_postcode
+flat_no
+house_no
+address1
+address2
+town
+postcode
+bedrooms
+furnishings
+day
+month
+year
+comments
+tenant_name
+tenant_mobile
+tenant_email
+assignment
+quoted_price
+quoted_team
+service_time
+</code></pre>
+
+<h3>In depth</h3>
+<h4>apikey</h4>
+<p>This is the key apikey provided by VeriSmart, along with the secret.</p>
+<h4>mode</h4>
+<p>The mode for landlords should always be the string &quot;create_landlord&quot;.</p>
+<h4>landlord_name, landlord_email, landlord_phone, landlord_address1, landlord_address2, landlord_town, landlord_county, landlord_postcode</h4>
+<p>All strings, to supply VeriSmart with the invoicing and delivery information needed for this landlord.If any field is unknown, can be left blank except for landlord_email and landlord_name.</p>
+<h4>flat_no (optional)</h4>
+<p>The flat number of the rental property.</p>
+<h4>house_no (optional)</h4>
+<p>The house number of the rental property.</p>
+<h4>address1</h4>
+<p>The first line of the address of the rental property.</p>
+<h4>address2</h4>
+<p>The second line of the address of the rental property.</p>
+<h4>town</h4>
+<p>The town of the rental property</p>
+<h4>postcode</h4>
+<p>The postcode of the rental property. It is essential this is correct. Spaces are optional.</p>
+<h4>bedrooms</h4>
+<p>Numeric, eg &quot;2&quot;, &quot;6&quot;.</p>
+<h4>furnishings</h4>
+<p>String, one of the following values &quot;UNFURNISHED&quot;, &quot;FURNISHED&quot;, &quot;PART-FURNISHED&quot;</p>
+<h4>day</h4>
+<p>The day to create the booking, numeric eg &quot;1&quot;, &quot;24&quot;</p>
+<h4>month</h4>
+<p>The month to create the booking for, numeric eg 4, 12</p>
+<h4>year</h4>
+<p>The year to create the booking for, numeric eg 2017</p>
+<h4>comments</h4>
+<p>Any comments you wish to add relevant to the booking, such as access requirements or meter locations.</p>
+<h4>tenant_name (optional)</h4>
+<p>For VeriSmart Tenant Delivery of the report, tenant<em>name, tenant</em>mobile and tenant_email are all required. </p>
+<h4>assignment</h4>
+<p>The type of visit being booked. Available types are INVENTORY, CHECK-OUT, INTERIM.</p>
+<h4>quoted_price (optional)</h4>
+<p>This is the price provided by the Coverage API. Can be 0 to prompt a quotation from the team.</p>
+<h4>quoted_team</h4>
+<p>This is the teamid provided by the Coverage API. <em>Please note that bookings cannot be successfully create without a valid teamid</em>.</p>
+<h4>service_time</h4>
+<p>We recommend that this is always set to &quot;TBA&quot; to allow the team to arrange the times with the landlord directly. Other options are &quot;ANYTIME&quot;, &quot;MORNING&quot;, &quot;AFTERNOON&quot; or an actual time in format HH:MM, eg &quot;13:30&quot;.</p>
+<h2>JSON returned</h2>
+<p>The following is returned</p>
+<pre><code>{
+  &quot;request_status&quot;: &quot;1&quot;,
+  &quot;taskid&quot;: 79172
+}
+</code></pre>
+
+<p>&quot;request_status&quot; is 1 for success, 0 for failure.
+On success, &quot;taskid&quot; is the unique VeriSmart reference for that booking request.</p>
+<h2>Complete example in PHP</h2>
+<pre><code>$apiurl = 'https://www.inventoryclerk.org/dcal/api/v1/booking/';
+$apikey = 'MYAPIKEY';
+$apisecret = 'MYAPISECRET';
+
+$request_data = 
+        array(
+        'apikey' =&gt; $apikey,
+        'mode' =&gt; 'create_landlord',
+        'landlord_name' =&gt; &quot;Bobby Tables&quot;,
+        'landlord_email' =&gt; &quot;landlord@verismart.co.uk&quot;,
+        'landlord_phone' =&gt; &quot;07700 900000&quot;,
+        'landlord_address1' =&gt; &quot;56 Landlord Lane&quot;,
+        'landlord_address2' =&gt; &quot;Landlordstone Valley&quot;,
+        'landlord_town' =&gt; &quot;Poole&quot;,
+        'landlord_county' =&gt; &quot;Dorset&quot;,
+        'landlord_postcode' =&gt; &quot;BH14 0XX&quot;,
+        'flat_no' =&gt; &quot;43&quot;,
+        'house_no' =&gt; &quot;&quot;,
+        'address1' =&gt; &quot;Burgess House&quot;,
+        'address2' =&gt; &quot;Boscombe&quot;,
+        'town' =&gt; &quot;Bournemouth&quot;,
+        'postcode' =&gt; &quot;BH1 1XX&quot;,
+        'bedrooms' =&gt; &quot;3&quot;,
+        'furnishings' =&gt; &quot;UNFURNISHED&quot;,
+        'day' =&gt; &quot;1&quot;,
+        'month' =&gt; &quot;4&quot;,
+        'year' =&gt; &quot;2018&quot;,
+        'comments' =&gt; 'Access requires a key, landlord to provide.',
+        'tenant_name' =&gt; &quot;John Smith&quot;,
+        'tenant_mobile' =&gt; &quot;07700 900000&quot;,
+        'tenant_email' =&gt; &quot;tenant@verismart.co.uk&quot;,
+        'assignment' =&gt; &quot;INVENTORY&quot;,
+        'quoted_price' =&gt; &quot;100&quot;,
+        'quoted_team' =&gt; &quot;1506&quot;,
+        'service_time' =&gt; 'TBA'
+        );      
+
+        // Now lets call it
+        $query_string = http_build_query($request_data);
+        $signature = hash_hmac(&quot;sha512&quot;, $query_string, $apisecret);
+
+        $qstring = $query_string . '&amp;signature=' . $signature;
+
+        $result = file_get_contents($apiurl . '?' . $qstring);
+
+        $result_data = json_decode($result, TRUE);
+
+        if ($result_data['request_status'] == 1) {
+
+            echo &quot;All worked&quot;;
+
+        } else {
+
+            echo &quot;Not worked&quot;;
+
+        }
+</code></pre>
+
