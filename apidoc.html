@@ -24,7 +24,7 @@
 <h2>Coverage API</h2>
 <p>Using Coverage is simple, as there is no authentication required. A URL provides the data as JSON.</p>
 <p>A Postcode is required. You can optionally include details of the requested service and property for a quotation.</p>
-<pre><code>https://www.inventoryclerk.org/dcal/api/coverage/quote/{POSTCODE}/{BEDROOMS}/{FURNISHED}/{SERVICE}/.json
+<pre><code>https://www.verismart.org/dcal/api/coverage/quote/{POSTCODE}/{BEDROOMS}/{FURNISHED}/{SERVICE}/.json
 </code></pre>
 
 <p>All {FIELDS} need to be URL encoded.</p>
@@ -34,7 +34,7 @@
 <p>FURNISHED - Options are FURNISHED, UNFURNISHED or PART-FURNISHED</p>
 <p>SERVICE - Currently, options are INVENTORY, CHECK-OUT, CHECK-IN and INTERIM</p>
 <p>A working example</p>
-<pre><code>https://www.inventoryclerk.org/dcal/api/coverage/quote/BH1%201XX/2%20BEDROOM/UNFURNISHED/INVENTORY/.json
+<pre><code>https://www.verismart.co.uk/dcal/api/coverage/quote/BH1%201XX/2%20BEDROOM/UNFURNISHED/INVENTORY/.json
 </code></pre>
 
 <p>This returns the following JSON, an example of an area which is licensed, but the team does not provide quote prices upfront. A booking request for this team would trigger the team to contact the Landlord and quote manually.</p>
@@ -59,7 +59,7 @@
 </code></pre>
 
 <p>This example returns a quoted price</p>
-<pre><code>https://www.inventoryclerk.org/dcal/api/coverage/quote/NR118HJ/2/UNFURNISHED/INVENTORY/.json
+<pre><code>https://www.verismart.co.uk/dcal/api/coverage/quote/NR118HJ/2/UNFURNISHED/INVENTORY/.json
 </code></pre>
 
 <p>This JSON is Returned</p>
@@ -84,7 +84,7 @@
 </code></pre>
 
 <p>Example of a request where the area does not have coverage within 25 miles</p>
-<pre><code>https://dev2.verismart.co.uk/dcal/api/coverage/nearest/IP1/.json
+<pre><code>https://www.verismart.co.uk/dcal/api/coverage/nearest/IP1/.json
 </code></pre>
 
 <p>This JSON is returned</p>
@@ -136,7 +136,7 @@
 <p>All responses will be JSON encoded.</p>
 <p>All endpoints use SSL, and will not work over a normal http:// transport.</p>
 <h3>Endpoint</h3>
-<pre><code>https://www.inventoryclerk.org/dcal/api/v1/booking/
+<pre><code>https://www.verismart.co.uk/dcal/api/v1/booking/
 </code></pre>
 
 <h3>Authentification</h3>
@@ -243,7 +243,7 @@ service_time
 <p>&quot;request_status&quot; is 1 for success, 0 for failure.
 On success, &quot;taskid&quot; is the unique VeriSmart reference for that booking request.</p>
 <h2>Complete example in PHP</h2>
-<pre><code>$apiurl = 'https://www.inventoryclerk.org/dcal/api/v1/booking/';
+<pre><code>$apiurl = 'https://www.verismart.co.uk/dcal/api/v1/booking/';
 $apikey = 'MYAPIKEY';
 $apisecret = 'MYAPISECRET';
 
